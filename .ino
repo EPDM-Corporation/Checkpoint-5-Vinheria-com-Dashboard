@@ -144,6 +144,7 @@ void reconnectMQTT() {
     }
 }
 
+//Função para ler a luminosidade
 void handleLuminosity() {
   //Mapeamento apropriado da luz para o simulador Wokwi, utilizar o outro mapeamento se não estiver no simulador
     const int potPin = 34;
@@ -156,6 +157,7 @@ void handleLuminosity() {
     MQTT.publish(TOPICO_PUBLISH_2, mensagem.c_str());
 }
 
+// Função para ler a temperatura
 void handleTemperature(){
   float temperature = dht.readTemperature(); // Lê o valor da temperatura
   String mensagem = String(temperature);
@@ -164,7 +166,7 @@ void handleTemperature(){
   MQTT.publish(TOPICO_PUBLISH_3, mensagem.c_str());
 }
 
-
+// Função para ler a umidade
 void handleHumidity(){
   float humidity = dht.readHumidity(); // Lê o valor da Humidade
   String mensagem = String(humidity);
@@ -184,7 +186,6 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
     VerificaConexoesWiFIEMQTT();
     EnviaEstadoOutputMQTT();
     handleLuminosity();
