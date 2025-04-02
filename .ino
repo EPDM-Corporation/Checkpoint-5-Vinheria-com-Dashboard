@@ -8,19 +8,19 @@
 // Configurações - variáveis editáveis
 const char* default_SSID = "Wokwi-GUEST"; // Nome da rede Wi-Fi (No caso utilizando o Wi-Fi do simulador)
 const char* default_PASSWORD = ""; // Senha da rede Wi-Fi (No caso utilizando o Wi-Fi do simulador)
-const char* default_BROKER_MQTT = "4.206.174.133"; // IP do Broker MQTT
+const char* default_BROKER_MQTT = "4.205.235.157"; // IP do Broker MQTT
 const int default_BROKER_PORT = 1883; // Porta do Broker MQTT
-const char* default_TOPICO_SUBSCRIBE = "/TEF/lamp001/cmd"; // Tópico MQTT de escuta
-const char* default_TOPICO_PUBLISH_1 = "/TEF/lamp001/attrs"; // Tópico MQTT de envio de informações para Broker
-const char* default_TOPICO_PUBLISH_2 = "/TEF/lamp001/attrs/l"; // Tópico MQTT de envio de informações para Broker
-const char* default_TOPICO_PUBLISH_3 = "/TEF/lamp001/attrs/t"; // Tópico MQTT de envio de informações para Broker
-const char* default_TOPICO_PUBLISH_4 = "/TEF/lamp001/attrs/h"; // Tópico MQTT de envio de informações para Broker
+const char* default_TOPICO_SUBSCRIBE = "/TEF/sensor001/cmd"; // Tópico MQTT de escuta
+const char* default_TOPICO_PUBLISH_1 = "/TEF/sensor001/attrs"; // Tópico MQTT de envio de informações para Broker
+const char* default_TOPICO_PUBLISH_2 = "/TEF/sensor001/attrs/l"; // Tópico MQTT de envio de informações para Broker LUZ
+const char* default_TOPICO_PUBLISH_3 = "/TEF/sensor001/attrs/t"; // Tópico MQTT de envio de informações para Broker TEMPERATURA
+const char* default_TOPICO_PUBLISH_4 = "/TEF/sensor001/attrs/h"; // Tópico MQTT de envio de informações para Broker UMIDADE
 const char* default_ID_MQTT = "fiware_001"; // ID MQTT
 const int default_D4 = 2; // Pino do LED onboard
-// Declaração da variável para o prefixo do tópiczo
+// Declaração da variável para o prefixo do tópico
 const char* topicPrefix = "sensor001";
 
-#define DHTPIN 35 // Pino do DHT
+#define DHTPIN 32 // Pino do DHT
 #define DHTTYPE DHT22 // TIpo do DHT, podendo ser DHT11 ou DHT22
 DHT dht(DHTPIN,DHTTYPE); // Definição do DHT
 
@@ -157,11 +157,22 @@ void handleLuminosity() {
 }
 
 void handleTemperature(){
-  float humidity = dht.readHumidity(); // Lê valor de humidade
   float temperature = dht.readTemperature(); // Lê o valor da temperatura
-
-
+  String mensagem = String(temperature);
+  Serial.print("Valor da Temperatura: ");
+  Serial.println(mensagem.c_str());
+  MQTT.publish(TOPICO_PUBLISH_3, mensagem.c_str());
 }
+
+
+void handleHumidity(){
+  float humidity = dht.readHumidity(); // Lê o valor da Humidade
+  String mensagem = String(humidity);
+  Serial.print("Valor da Umidade: ");
+  Serial.println(mensagem.c_str());
+  MQTT.publish(TOPICO_PUBLISH_4, mensagem.c_str());
+}
+
 
 void setup() {
     InitOutput();
@@ -177,5 +188,7 @@ void loop() {
     VerificaConexoesWiFIEMQTT();
     EnviaEstadoOutputMQTT();
     handleLuminosity();
+    handleTemperature();
+    handleHumidity();
     MQTT.loop();
 }
