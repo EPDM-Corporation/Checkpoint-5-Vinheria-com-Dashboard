@@ -7,3 +7,6 @@
 - CORS
 - request
 - matplotlib (caso queira o gráfico no python)
+
+## Video
+https://youtu.be/_UkzW-MzAJk
