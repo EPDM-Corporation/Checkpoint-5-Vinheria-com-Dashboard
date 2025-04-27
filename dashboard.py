@@ -1,12 +1,11 @@
 import requests
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
 import json
 
 LED_CHECK = 1
 
 # CONFIGURAÇÕES
-IP_DO_SERVER = '4.205.195.87' # Ip do server
+IP_DO_SERVER = '52.237.23.203' # Ip do server
 
 LUMINOSIDADE_MAX = 77
 TEMPERATURA_MAX = 36
@@ -14,13 +13,8 @@ TEMPERATURA_MIN = -3
 UMIDADE_MAX = 83
 UMIDADE_MIN = 8
 
-# CONFIGURAÇÃO DE LEITURA
-lastN = 10  
 
-# Inicializar figura fora da função para reutilizar
-fig, ax = plt.subplots()
-
-# Função para obter os dados da API
+# Função para obter os dados de luminosidade a partir da API
 def obter_dados(lastN, sensorType, IP):
     url = f"http://{IP}:8666/STH/v1/contextEntities/type/Sensor/id/urn:ngsi-ld:Sensor:001/attributes/{sensorType}?lastN={lastN}"
     headers = {
@@ -78,9 +72,9 @@ def verificar_limite(var_lista, var_tipo):
                 else:
                     ligar_desligar_led('off', IP_DO_SERVER)
 
-# Função de animação
-def animate(i):
-    ax.clear()
+# Função para criar e exibir o gráfico
+def plotar_grafico():
+
     luminosity = obter_dados(lastN, "luminosity", IP_DO_SERVER)
     temperature = obter_dados(lastN, "temperature", IP_DO_SERVER)
     humidity = obter_dados(lastN, "humidity", IP_DO_SERVER)
@@ -88,8 +82,7 @@ def animate(i):
     if not (luminosity and temperature and humidity):
         print("Dados insuficientes para plotar.")
         return
-
-    # Preparar os dados
+    
     tempos = [entry['recvTime'][11:19] for entry in luminosity]  # Pegando só HH:MM:SS
     lum = [float(entry['attrValue']) for entry in luminosity]
     temp = [float(entry['attrValue']) for entry in temperature]
@@ -100,27 +93,43 @@ def animate(i):
     verificar_limite(temp, "temperatura")
     verificar_limite(hum, "umidade")
 
+    plt.figure(figsize=(12, 6))
+
+
     # Plotar
-    ax.plot(tempos, lum, 'r-o', label="Luminosidade")
-    ax.plot(tempos, temp, 'g-s', label="Temperatura")
-    ax.plot(tempos, hum, 'b-^', label="Umidade")
+    plt.plot(tempos, lum, 'r-o', label="Luminosidade")
+    plt.plot(tempos, temp, 'g-s', label="Temperatura")
+    plt.plot(tempos, hum, 'b-^', label="Umidade")
 
     # Linhas limites
-    ax.axhline(LUMINOSIDADE_MAX, color='r', linestyle='--', label='Limite Luminosidade')
-    ax.axhline(TEMPERATURA_MAX, color='g', linestyle='--', label='Temp Máx')
-    ax.axhline(TEMPERATURA_MIN, color='g', linestyle='--', label='Temp Mín')
-    ax.axhline(UMIDADE_MAX, color='b', linestyle='--', label='Umidade Máx')
-    ax.axhline(UMIDADE_MIN, color='b', linestyle='--', label='Umidade Mín')
+    plt.axhline(LUMINOSIDADE_MAX, color='r', linestyle='--', label='Limite Luminosidade')
+    plt.axhline(TEMPERATURA_MAX, color='g', linestyle='--', label='Temp Máx')
+    plt.axhline(TEMPERATURA_MIN, color='g', linestyle='--', label='Temp Mín')
+    plt.axhline(UMIDADE_MAX, color='b', linestyle='--', label='Umidade Máx')
+    plt.axhline(UMIDADE_MIN, color='b', linestyle='--', label='Umidade Mín')
 
-    ax.set_title("Sensor de Temperatura, Umidade e Luminosidade (Tempo real)")
-    ax.set_xlabel("Tempo")
-    ax.set_ylabel("Valores")
-    ax.legend()
-    ax.grid(True)
-   
+    plt.title("Sensor de Temperatura, Umidade e Luminosidade (Tempo real)")
+    plt.xlabel("Tempo")
+    plt.ylabel("Valores")
+    plt.legend()
+    plt.grid(True)
+    
     plt.tight_layout()
+    plt.show()
+# # Solicitar ao usuário um valor "lastN" entre 1 e 100
+# while True:
+#     try:
+#         lastN = int(input("Digite um valor para lastN (entre 1 e 100): "))
+#         if 1 <= lastN <= 100:
+#             break
+#         else:
+#             print("O valor deve estar entre 1 e 100. Tente novamente.")
+#     except ValueError:
+#         print("Por favor, digite um número válido.")
 
-# Executar animação
-ani = FuncAnimation(fig, animate, interval=5000, cache_frame_data=False)  # Atualiza a cada 5 segundos
-plt.xticks(rotation=45)
-plt.show()
+# Obter os dados e plotar o gráfico
+
+# Variável fixa para serviço do linux Ubuntu
+lastN = 10
+
+plotar_grafico()
