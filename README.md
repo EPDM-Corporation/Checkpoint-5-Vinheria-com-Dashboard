@@ -1,5 +1,7 @@
 # Checkpoint 5 - Vinheria com Dashboard
 Esse projeto foi necessário utilizar os circuitos do checkpoint 4 e mandar eles para um dashboard e disponibilizar através de uma API 5000
+## Sobre
+- Utilize dashboard.py para pegar os dados diretos e criar um gráfico no matplotlib
 
 ## Funcionalidades
 - Atualização de dados em tempo real utilizando gráfico charts do NPM.
