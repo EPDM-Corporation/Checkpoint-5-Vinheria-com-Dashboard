@@ -127,7 +127,7 @@ while True:
     except ValueError:
         print("Por favor, digite um número válido.")
 
-Obter os dados e plotar o gráfico
+# Obter os dados e plotar o gráfico
 
 # # Variável fixa para serviço do linux Ubuntu
 # lastN = 10
