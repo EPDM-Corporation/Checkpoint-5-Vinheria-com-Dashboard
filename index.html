@@ -21,10 +21,11 @@
         <input type="text" name="" id="limitMinH" placeholder="Limite mínimo de umidade" class="border-2 border-purple-500 m-5" required>
         <button class="border-2 border-black m-5 w-50">Enviar</button>
     </form>
-
+    <button class="border-2 border-black m-5 w-50" onclick=ligar()>Ligar</button>
+    <button class="border-2 border-black m-5 w-50" onclick=desligar()>Desligar</button>
     <script>
         const IP = '52.237.23.203'
-        const lastN = 50
+        const lastN = 10
         let luminosidade_global = [];
         let temperatura_global = [];
         let umidade_global = [];
@@ -35,6 +36,8 @@
         let temperatura_min = [];
         let umidade_max = [];
         let umidade_min = [];
+
+        let led_status = 1;
 
         let myChart; // variável para o gráfico
 
@@ -122,37 +125,66 @@
             atualizarGrafico();
             alert("Limites atualizados!")
         }
-        function LedComando(led_command) {
-            var settings = {
-                "url": `http://${IP}/v2/entities/urn:ngsi-ld:Sensor:001/attrs`,
-                "method": "PATCH",
-                "timeout": 0,
-                "headers": {
-                    "Content-Type": "application/json",
-                    "fiware-service": "smart",
-                    "fiware-servicepath": "/"
-                },
-                "data": JSON.stringify({
-                    led_command: { // "on" ou "off"
-                        "type": "command",
-                        "value": ""
-                    }
-                }),
+        function ligar(){
+            var settingsLigar = {
+            "url": "http://52.237.23.203:1026/v2/entities/urn:ngsi-ld:Sensor:001/attrs",
+            "method": "PATCH",
+            "timeout": 0,
+            "headers": {
+                "Content-Type": "application/json",
+                "fiware-service": "smart",
+                "fiware-servicepath": "/"
+            },
+            "data": JSON.stringify({
+                "on": {
+                "type": "command",
+                "value": ""
+                }
+            }),
             };
 
-            $.ajax(settings).done(function (response) {
-                console.log(response);
-            }).fail(function (error) {
-                console.error("Erro na requisição:", error);
+            $.ajax(settingsLigar).done(function (response) {
+            console.log(response);
             });
-            }
-        function checkLimit(){
-            for (let i = 0; i < luminosidade_global.length; i++){
-                if (luminosidade_max[0] <= luminosidade_global[i]){
-                    console.log("ALERTA");
-                    LedComando("on")
+        }
+
+        function desligar(){
+            var settingsDesligar = {
+            "url": "http://52.237.23.203:1026/v2/entities/urn:ngsi-ld:Sensor:001/attrs",
+            "method": "PATCH",
+            "timeout": 0,
+            "headers": {
+                "Content-Type": "application/json",
+                "fiware-service": "smart",
+                "fiware-servicepath": "/"
+            },
+            "data": JSON.stringify({
+                "off": {
+                "type": "command",
+                "value": ""
                 }
+            }),
+            };
+
+            $.ajax(settingsDesligar).done(function (response) {
+            console.log(response);
+            });
+        }
+        function alternarLed(){
+            led_status = led_status * -1
+            if (led_status == -1){
+                ligar()
+                return
             }
+            desligar()
+        }
+        function checkLimit(){
+            if (luminosidade_max[0] <= luminosidade_global[luminosidade_global.length - 1]){
+                alternarLed();
+                console.log("ALERTA");
+                return
+            }
+            return
         }
         // Função para atualizar o gráfico com os dados mais recentes
         function atualizarGrafico() {
@@ -250,14 +282,14 @@
         buscarTemperatura()
         buscarUmidade()
         buscarTempo()
-        // Chama as funções de busca de dados a cada 5 segundos
+        // Chama as funções de busca de dados a cada 3 segundos
         setInterval(function() {
             buscarLuminosidade();
             buscarTemperatura();
             buscarUmidade();
             buscarTempo();
             checkLimit();
-        }, 5000);
+        }, 3000);
     </script>
 </body>
 </html>
