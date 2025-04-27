@@ -22,6 +22,9 @@ Esse projeto foi necessário utilizar os circuitos do checkpoint 4 e mandar eles
 - Guilherme Vital
 - Lucas Guerreiro
 
+## Esquema do Circuito
+![image](https://github.com/user-attachments/assets/fbe3f641-f54b-4853-9ebf-3f1af6fc1872)
+
 
 ## Video
 https://youtu.be/_UkzW-MzAJk
