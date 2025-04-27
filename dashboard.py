@@ -82,7 +82,7 @@ def plotar_grafico():
     if not (luminosity and temperature and humidity):
         print("Dados insuficientes para plotar.")
         return
-    
+
     tempos = [entry['recvTime'][11:19] for entry in luminosity]  # Pegando só HH:MM:SS
     lum = [float(entry['attrValue']) for entry in luminosity]
     temp = [float(entry['attrValue']) for entry in temperature]
@@ -113,23 +113,25 @@ def plotar_grafico():
     plt.ylabel("Valores")
     plt.legend()
     plt.grid(True)
-    
+
     plt.tight_layout()
     plt.show()
-# # Solicitar ao usuário um valor "lastN" entre 1 e 100
-# while True:
-#     try:
-#         lastN = int(input("Digite um valor para lastN (entre 1 e 100): "))
-#         if 1 <= lastN <= 100:
-#             break
-#         else:
-#             print("O valor deve estar entre 1 e 100. Tente novamente.")
-#     except ValueError:
-#         print("Por favor, digite um número válido.")
+# Solicitar ao usuário um valor "lastN" entre 1 e 100
+while True:
+    try:
+        lastN = int(input("Digite um valor para lastN (entre 1 e 100): "))
+        if 1 <= lastN <= 100:
+            break
+        else:
+            print("O valor deve estar entre 1 e 100. Tente novamente.")
+    except ValueError:
+        print("Por favor, digite um número válido.")
 
-# Obter os dados e plotar o gráfico
+Obter os dados e plotar o gráfico
 
-# Variável fixa para serviço do linux Ubuntu
-lastN = 10
+# # Variável fixa para serviço do linux Ubuntu
+# lastN = 10
 
 plotar_grafico()
+
+
