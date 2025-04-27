@@ -1,0 +1,16 @@
+[Unit]
+Description=Serviço de Monitoramento de Sensor de Temperatura, Umidade e Luminosidade
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/azureuser/python/sensormain.py
+WorkingDirectory=/home/azureuser/python
+StandardOutput=append:/var/log/sensorflask.log
+StandardError=append:/var/log/sensorflask.err
+Restart=always
+RestartSec=10s
+User=azureuser
+Group=azureuser
+
+[Install]
+WantedBy=multi-user.target
