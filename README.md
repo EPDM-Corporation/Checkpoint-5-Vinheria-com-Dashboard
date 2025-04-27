@@ -6,6 +6,7 @@ Esse projeto foi necessário utilizar os circuitos do checkpoint 4 e mandar eles
 - Disponibilização da API na porta 5000, utilizando Flask de Python e Serviços do Linux em uma VM do Azure.
 
 ## Dependências
+- VM com Docker para troca de informações (Para o exemplo do vídeo, foi utilizado Linux Ubuntu dentro de um Cloud Service)
 ### Bibliotecas do ESP32
 - PubSubClient
 - DHT sensor library
