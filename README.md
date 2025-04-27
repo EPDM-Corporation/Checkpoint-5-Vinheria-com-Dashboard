@@ -29,3 +29,6 @@ Esse projeto foi necessário utilizar os circuitos do checkpoint 4 e mandar eles
 
 ## Video
 https://youtu.be/_UkzW-MzAJk
+
+## Créditos
+https://github.com/fabiocabrini/fiware
