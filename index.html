@@ -24,21 +24,24 @@
     <button class="border-2 border-black m-5 w-50" onclick=ligar()>Ligar</button>
     <button class="border-2 border-black m-5 w-50" onclick=desligar()>Desligar</button>
     <script>
-        const IP = '52.237.23.203'
-        const lastN = 10
+        const IP = '52.237.23.203' // IP do Server
+        const lastN = 10 // Quantidade de Amostras, utilizar valor relativamente baixo para não sobrecarregar a VM
+        // Variáveis que serão os dados do sensor a partir da API 500
         let luminosidade_global = [];
         let temperatura_global = [];
         let umidade_global = [];
         let tempo_global = [];
-
+        
+        // Variáveis de limites
         let luminosidade_max = [];
         let temperatura_max = [];
         let temperatura_min = [];
         let umidade_max = [];
         let umidade_min = [];
 
+        //Flags para verificar o estado do LED
         let led_status = 1;
-
+        let led_flag = 0;
         let myChart; // variável para o gráfico
 
         // Função para buscar dados de luminosidade
@@ -100,6 +103,8 @@
                 }
             });
         }
+        
+        // Função para buscar os limites
         function getLimit(){
             event.preventDefault()
 
@@ -125,6 +130,8 @@
             atualizarGrafico();
             alert("Limites atualizados!")
         }
+        
+        // Funções para ligar e desligar os LEDS
         function ligar(){
             var settingsLigar = {
             "url": "http://52.237.23.203:1026/v2/entities/urn:ngsi-ld:Sensor:001/attrs",
@@ -147,7 +154,6 @@
             console.log(response);
             });
         }
-
         function desligar(){
             var settingsDesligar = {
             "url": "http://52.237.23.203:1026/v2/entities/urn:ngsi-ld:Sensor:001/attrs",
@@ -170,6 +176,7 @@
             console.log(response);
             });
         }
+        // Função para alternar os LEDS
         function alternarLed(){
             led_status = led_status * -1
             if (led_status == -1){
@@ -179,12 +186,22 @@
             desligar()
         }
         function checkLimit(){
-            if (luminosidade_max[0] <= luminosidade_global[luminosidade_global.length - 1]){
+            if (luminosidade_max[0] <= luminosidade_global[luminosidade_global.length - 1]
+                || temperatura_max[0] <= temperatura_global[temperatura_global.length - 1]
+                || temperatura_min[0] >= temperatura_global[temperatura_global.length - 1]
+                || umidade_max[0] <= umidade_global[umidade_global.length - 1]
+                || umidade_min[0] >= umidade_global[umidade_global.length -1]
+            ){
                 alternarLed();
+                led_flag = 1;
                 console.log("ALERTA");
                 return
             }
-            return
+            if (led_flag == 1){
+                desligar()
+                led_flag = 0
+                return
+            }
         }
         // Função para atualizar o gráfico com os dados mais recentes
         function atualizarGrafico() {
@@ -199,19 +216,19 @@
                             {
                                 label: 'Luminosidade',
                                 data: luminosidade_global,
-                                borderColor: 'rgba(255, 99, 132, 1)', // Vermelho
+                                borderColor: 'rgba(255, 99, 132, 1)', 
                                 fill: false
                             },
                             {
                                 label: 'Temperatura',
                                 data: temperatura_global,
-                                borderColor: 'rgba(54, 162, 235, 1)', // Azul
+                                borderColor: 'rgba(54, 162, 235, 1)', 
                                 fill: false
                             },
                             {
                                 label: 'Umidade',
                                 data: umidade_global,
-                                borderColor: 'rgb(128, 0, 128)', // Roxo
+                                borderColor: 'rgb(128, 0, 128)',
                                 fill: false
                             },
                             {
@@ -278,6 +295,7 @@
                 myChart.update();  // Atualiza o gráfico
             }
         }
+        // Função principal
         buscarLuminosidade()
         buscarTemperatura()
         buscarUmidade()
