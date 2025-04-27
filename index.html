@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Vinheria</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+<body>
+    <h1>Dashboard Vinheria</h1>
+    <!-- Renderização do Gráfico -->
+    <canvas id="myChart" width="400" height="200"></canvas>
+    <form action="submit" class="flex flex-col justify-center" onsubmit=getLimit()>
+        <input type="text" name="" id="limitL" placeholder="Limite de Luminosidade" class="border-2 border-orange-500 m-5" required>
+        <input type="text" name="" id="limitMaxT" placeholder="Limite máximo de temperatura" class="border-2 border-blue-500 m-5" required>
+        <input type="text" name="" id="limitMinT" placeholder="Limite mínimo de temperatura" class="border-2 border-blue-500 m-5" required>
+        <input type="text" name="" id="limitMaxH" placeholder="Limite máximo de umidade" class="border-2 border-purple-500 m-5" required>
+        <input type="text" name="" id="limitMinH" placeholder="Limite mínimo de umidade" class="border-2 border-purple-500 m-5" required>
+        <button class="border-2 border-black m-5 w-50">Enviar</button>
+    </form>
+
+    <script>
+        const IP = '52.237.23.203'
+        const lastN = 50
+        let luminosidade_global = [];
+        let temperatura_global = [];
+        let umidade_global = [];
+        let tempo_global = [];
+
+        let luminosidade_max = [];
+        let temperatura_max = [];
+        let temperatura_min = [];
+        let umidade_max = [];
+        let umidade_min = [];
+
+        let myChart; // variável para o gráfico
+
+        // Função para buscar dados de luminosidade
+        function buscarLuminosidade() {
+            $.ajax({
+                url: `http://${IP}:5000/sensor/luminosidade?lastN=${lastN}`,
+                method: "GET",
+                success: function(response) {
+                    luminosidade_global = response;
+                    atualizarGrafico();
+                },
+                error: function(error) {
+                    console.error("Erro na requisição:", error);
+                }
+            });
+        }
+
+        // Função para buscar dados de temperatura
+        function buscarTemperatura() {
+            $.ajax({
+                url: `http://${IP}:5000/sensor/temperatura?lastN=${lastN}`,
+                method: "GET",
+                success: function(response) {
+                    temperatura_global = response;
+                    atualizarGrafico();
+                },
+                error: function(error) {
+                    console.error("Erro na requisição:", error);
+                }
+            });
+        }
+
+        // Função para buscar dados de umidade
+        function buscarUmidade() {
+            $.ajax({
+                url: `http://${IP}:5000/sensor/umidade?lastN=${lastN}`,
+                method: "GET",
+                success: function(response) {
+                    umidade_global = response;
+                    atualizarGrafico();
+                },
+                error: function(error) {
+                    console.error("Erro na requisição:", error);
+                }
+            });
+        }
+
+        // Função para buscar dados de tempo
+        function buscarTempo() {
+            $.ajax({
+                url: `http://${IP}:5000/sensor/tempo?lastN=${lastN}`,
+                method: "GET",
+                success: function(response) {
+                    tempo_global = response;
+                    atualizarGrafico();
+                },
+                error: function(error) {
+                    console.error("Erro na requisição:", error);
+                }
+            });
+        }
+        function getLimit(){
+            event.preventDefault()
+
+            luminosidade_max = [];
+            temperatura_max = [];
+            temperatura_min = [];
+            umidade_max = [];
+            umidade_min = [];
+
+            luminosidade_max_value = document.getElementById("limitL").value
+            temperatura_max_value = document.getElementById('limitMaxT').value
+            temperatura_min_value = document.getElementById("limitMinT").value
+            umidade_max_value = document.getElementById("limitMaxH").value
+            umidade_min_value = document.getElementById("limitMinH").value
+
+            for(let i = 0; i < lastN; i++){
+                luminosidade_max.push(luminosidade_max_value);
+                temperatura_max.push(temperatura_max_value);
+                temperatura_min.push(temperatura_min_value);
+                umidade_max.push(umidade_max_value);
+                umidade_min.push(umidade_min_value);
+            }
+            atualizarGrafico();
+            alert("Limites atualizados!")
+        }
+        function LedComando(led_command) {
+            var settings = {
+                "url": `http://${IP}/v2/entities/urn:ngsi-ld:Sensor:001/attrs`,
+                "method": "PATCH",
+                "timeout": 0,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "fiware-service": "smart",
+                    "fiware-servicepath": "/"
+                },
+                "data": JSON.stringify({
+                    led_command: { // "on" ou "off"
+                        "type": "command",
+                        "value": ""
+                    }
+                }),
+            };
+
+            $.ajax(settings).done(function (response) {
+                console.log(response);
+            }).fail(function (error) {
+                console.error("Erro na requisição:", error);
+            });
+            }
+        function checkLimit(){
+            for (let i = 0; i < luminosidade_global.length; i++){
+                if (luminosidade_max[0] <= luminosidade_global[i]){
+                    console.log("ALERTA");
+                    LedComando("on")
+                }
+            }
+        }
+        // Função para atualizar o gráfico com os dados mais recentes
+        function atualizarGrafico() {
+            if (!myChart) {
+                // Se o gráfico ainda não foi criado, cria o gráfico
+                var ctx = document.getElementById('myChart').getContext('2d');
+                myChart = new Chart(ctx, {
+                    type: 'line', // Tipo de gráfico (linha)
+                    data: {
+                        labels: tempo_global,  // Eixo X (ex: tempo)
+                        datasets: [
+                            {
+                                label: 'Luminosidade',
+                                data: luminosidade_global,
+                                borderColor: 'rgba(255, 99, 132, 1)', // Vermelho
+                                fill: false
+                            },
+                            {
+                                label: 'Temperatura',
+                                data: temperatura_global,
+                                borderColor: 'rgba(54, 162, 235, 1)', // Azul
+                                fill: false
+                            },
+                            {
+                                label: 'Umidade',
+                                data: umidade_global,
+                                borderColor: 'rgb(128, 0, 128)', // Roxo
+                                fill: false
+                            },
+                            {
+                                label: 'Luminosidade Máxima',
+                                data: luminosidade_max,
+                                borderColor: 'rgb(255, 159, 64)',
+                                fill: false
+                            },
+                            {
+                                label: 'Temperatura Máxima',
+                                data: temperatura_max,
+                                borderColor: 'rgb(0, 0, 139)',
+                                fill: false
+                            },
+                            {
+                                label: 'Temperatura Mínima',
+                                data: temperatura_min,
+                                borderColor: 'rgb(173, 216, 230)',
+                                fill: false
+                            },
+                            {
+                                label: 'Umidade Máxima',
+                                data: umidade_max,
+                                borderColor: 'rgb(204, 153, 255)',
+                                fill: false
+                            },
+                            {
+                                label: 'Umidade Minima',
+                                data: umidade_min,
+                                borderColor: 'rgb(75, 0, 130)',
+                                fill: false
+                            },
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Tempo'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Valor'
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                // Atualiza os dados do gráfico
+                myChart.data.labels = tempo_global;
+                myChart.data.datasets[0].data = luminosidade_global;
+                myChart.data.datasets[1].data = temperatura_global;
+                myChart.data.datasets[2].data = umidade_global;
+                myChart.data.datasets[3].data = luminosidade_max;
+                myChart.data.datasets[4].data = temperatura_max;
+                myChart.data.datasets[5].data = temperatura_min;
+                myChart.data.datasets[6].data = umidade_max;
+                myChart.data.datasets[7].data = umidade_min;
+                myChart.update();  // Atualiza o gráfico
+            }
+        }
+        buscarLuminosidade()
+        buscarTemperatura()
+        buscarUmidade()
+        buscarTempo()
+        // Chama as funções de busca de dados a cada 5 segundos
+        setInterval(function() {
+            buscarLuminosidade();
+            buscarTemperatura();
+            buscarUmidade();
+            buscarTempo();
+            checkLimit();
+        }, 5000);
+    </script>
+</body>
+</html>
